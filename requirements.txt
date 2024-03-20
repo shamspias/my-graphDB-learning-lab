@@ -22,14 +22,16 @@ pillow
 langchain
 
 # Langchain version of LLMs
+langchain-experimental
 langchain-community
 langchain_openai
 langchain-mistralai
 langchain-google-genai
 langchain-groq
 
-# SDK for LLMs
+# SDK for LLMs or other agents
 gigachat
+wikipedia
 
 # Proxy socks
 httpx[socks]
