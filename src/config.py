@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     NEO4J_USERNAME: str = "neo4j"
     NEO4J_PASSWORD: str
     NEO4J_DATABASE: str = "neo4j"
+    DIFFBOT_API_KEY: str = "6c"
     LLM_API_KEY: str
     LLM_NAME: str = "groq"
     LLM_API_ENDPOINT: str = "https://api.example.com"
