@@ -1,9 +1,12 @@
-from src.config import settings
-from src.utils.text_extraction_utils import TextExtractor
+import asyncio
+
 from langchain_community.graphs import Neo4jGraph
 from langchain_experimental.graph_transformers.diffbot import DiffbotGraphTransformer
 from langchain.chains import GraphCypherQAChain
 from langchain_groq import ChatGroq
+
+from src.config import settings
+from src.utils.text_extraction_utils import TextExtractor
 
 
 class GraphDocumentProcessor:
@@ -64,5 +67,6 @@ async def main():
     result = await qa_chain_handler.run_query("Which university did Al Khwarizmi attend?")
     print(result)
 
-# Assuming an async environment, replace `main()` with appropriate async call if needed.
-# e.g., asyncio.run(main()) in a standalone script
+
+if __name__ == "__main__":
+    asyncio.run(main())
