@@ -25,6 +25,7 @@ class TextExtractor:
     @staticmethod
     def _process_pdf_with_ocr(file_path):
         text = ''
+        language = "und"
         with fitz.open(file_path) as doc:
             for page_num, page in enumerate(doc):
                 # Extract text from the page.
@@ -36,17 +37,18 @@ class TextExtractor:
                 if image_list:  # Only if there are images on the page
                     text += "\n"  # Ensure separation from the page text
                 for image_index in image_list:
+                    if text:
+                        language = detect(text)
                     xref = image_index[0]
                     base_image = doc.extract_image(xref)
                     image_bytes = base_image["image"]
                     # Use PIL to open the image in memory
                     image = Image.open(io.BytesIO(image_bytes))
                     # Apply OCR to the image
-                    image_text = pytesseract.image_to_string(image, lang='eng')
+                    image_text = pytesseract.image_to_string(image)
                     # Append OCR text immediately after the image is processed
                     text += image_text
 
-        language = detect(text) if text else "und"
         return text, language
 
     @staticmethod
