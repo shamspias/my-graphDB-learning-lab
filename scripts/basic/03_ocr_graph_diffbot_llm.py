@@ -36,7 +36,7 @@ class QAChainHandler:
         )
 
     async def run_query(self, query):
-        return await self.chain.run(query)
+        return await self.chain.invoke(query)
 
 
 class TextUploader:
@@ -46,9 +46,9 @@ class TextUploader:
     async def upload_and_extract_text(self, uploaded_file=None, uploaded_image=None):
         text, language = '', 'und'
         if uploaded_file:
-            text, language = await self.text_extractor.extract_text_from_uploaded_file(uploaded_file)
+            text, language = await self.text_extractor.extract_text_from_file_path(uploaded_file)
         elif uploaded_image:
-            text, language = await self.text_extractor.extract_text_from_uploaded_image(uploaded_image)
+            text, language = await self.text_extractor.extract_text_from_file_path(uploaded_image)
         return text, language
 
 
@@ -59,7 +59,12 @@ async def main():
                                  settings.NEO4J_DATABASE)
     qa_chain_handler = QAChainHandler(graph_handler.graph, settings.LLM_API_KEY)
 
-    raw_documents = "file_path"  # Placeholder, replace with actual document source
+    text_uploader = TextUploader()
+
+    file_path = "data/examples/pdf/conversation_with_rim.pdf"  # Placeholder, replace with actual document source
+    raw_documents, language = await text_uploader.upload_and_extract_text(uploaded_file=file_path)
+    print(raw_documents)
+    print(language)
     graph_documents = document_processor.convert_documents(raw_documents)
     graph_handler.add_documents(graph_documents)
 
