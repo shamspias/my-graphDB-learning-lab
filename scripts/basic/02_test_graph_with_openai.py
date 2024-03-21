@@ -9,7 +9,7 @@ NEO4J_USERNAME = settings.NEO4J_USERNAME
 NEO4J_PASSWORD = settings.NEO4J_PASSWORD
 NEO4J_DATABASE = settings.NEO4J_DATABASE
 
-graph = Neo4jGraph(url=NEO4J_URI, username=NEO4J_USERNAME, password=NEO4J_PASSWORD)
+graph = Neo4jGraph(url=NEO4J_URI, username=NEO4J_USERNAME, password=NEO4J_PASSWORD, database=NEO4J_DATABASE)
 graph.refresh_schema()
 
 chain = GraphCypherQAChain.from_llm(
