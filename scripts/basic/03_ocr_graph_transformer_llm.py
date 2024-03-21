@@ -1,8 +1,9 @@
 import asyncio
 
+from langchain_core.documents.base import Document
 from langchain_community.graphs import Neo4jGraph
-from langchain_experimental.graph_transformers.diffbot import DiffbotGraphTransformer
-from langchain.chains import GraphCypherQAChain
+from langchain_experimental.graph_transformers import LLMGraphTransformer
+from langchain.chains.graph_qa.cypher import GraphCypherQAChain
 from langchain_groq import ChatGroq
 
 from src.config import settings
@@ -10,8 +11,8 @@ from src.utils.text_extraction_utils import TextExtractor
 
 
 class GraphDocumentProcessor:
-    def __init__(self, diffbot_api_key):
-        self.transformer = DiffbotGraphTransformer(diffbot_api_key=diffbot_api_key)
+    def __init__(self, llm):
+        self.transformer = LLMGraphTransformer(llm=llm)
 
     def convert_documents(self, raw_documents):
         return self.transformer.convert_to_graph_documents(raw_documents)
@@ -28,15 +29,16 @@ class GraphHandler:
 
 class QAChainHandler:
     def __init__(self, graph, llm_api_key, model_name="mixtral-8x7b-32768"):
+        self.base_llm = ChatGroq(temperature=0, model_name=model_name, groq_api_key=llm_api_key)
         self.chain = GraphCypherQAChain.from_llm(
-            cypher_llm=ChatGroq(temperature=0, model_name=model_name, groq_api_key=llm_api_key),
+            cypher_llm=self.base_llm,
             qa_llm=ChatGroq(temperature=0, model_name=model_name, groq_api_key=llm_api_key),
             graph=graph,
             verbose=True,
         )
 
     async def run_query(self, query):
-        return await self.chain.invoke(query)
+        return self.chain.invoke(query)
 
 
 class TextUploader:
@@ -54,22 +56,25 @@ class TextUploader:
 
 async def main():
     # Setup and process
-    document_processor = GraphDocumentProcessor(settings.DIFFBOT_API_KEY)
+
     graph_handler = GraphHandler(settings.NEO4J_URI, settings.NEO4J_USERNAME, settings.NEO4J_PASSWORD,
                                  settings.NEO4J_DATABASE)
     qa_chain_handler = QAChainHandler(graph_handler.graph, settings.LLM_API_KEY)
+    document_processor = GraphDocumentProcessor(qa_chain_handler.base_llm)
 
     text_uploader = TextUploader()
 
+    # file_path = "data/examples/pdf/Аменорея и олигоменорея.pdf"  # Placeholder, replace with actual document source
     file_path = "data/examples/pdf/conversation_with_rim.pdf"  # Placeholder, replace with actual document source
-    raw_documents, language = await text_uploader.upload_and_extract_text(uploaded_file=file_path)
-    print(raw_documents)
-    print(language)
-    graph_documents = document_processor.convert_documents(raw_documents)
+    raw_data, language = await text_uploader.upload_and_extract_text(uploaded_file=file_path)
+    langchain_document = [Document(page_content=raw_data)]
+    print(langchain_document)
+    graph_documents = document_processor.convert_documents(langchain_document)
+    print(graph_documents)
     graph_handler.add_documents(graph_documents)
 
     # Example query
-    result = await qa_chain_handler.run_query("Which university did Al Khwarizmi attend?")
+    result = await qa_chain_handler.run_query("NEO4J_DATABASE=graph-learn")
     print(result)
 
 
