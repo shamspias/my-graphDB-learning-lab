@@ -1,4 +1,6 @@
 from pydantic_settings import BaseSettings
+from pydantic import Field
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -12,6 +14,12 @@ class Settings(BaseSettings):
     LLM_API_ENDPOINT: str = "https://api.example.com"
     REDIS_URL: str = "redis://localhost:6379/5"
     SYSTEM_INSTRUCTION: str = "Guide on integrating Neo4j with LLM."
+
+    # Observatory by Langsmith
+    LANGCHAIN_TRACING_V2: Optional[str] = Field(default=True)
+    LANGCHAIN_ENDPOINT: Optional[str] = Field(default="https://api.smith.langchain.com")
+    LANGCHAIN_API_KEY: Optional[str] = Field(default=None)
+    LANGCHAIN_PROJECT: Optional[str] = Field(default=None)
 
     class Config:
         env_file = ".env"
